@@ -1,5 +1,10 @@
 name: Deploy to GitHub Pages
 
+env:
+  GITHUB_DEPLOYMENT_BRANCH: cppsmith-github-io
+  SPHINX_SOURCEDIR: src
+  SPHINX_OUTPUTDIR: generated
+
 on:
   push:
     branches:
@@ -11,26 +16,40 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Setup Poetry
+        run: |
+          pip3 install --user poetry==1.1.14
+          python -m poetry config --local virtualenvs.in-project true
+
+      - name: Cache virtual environment
+        id: cache-venv
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: ${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
+
+      - name: Setup virtual environment
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          poetry install -v
+
       - name: Generate pages
         run: |
-          mkdir build
-          cp -r src/* build/
-          echo Done
+          echo "commit_origin_date=`git log -1 --pretty=%ct`" >> $GITHUB_ENV
+          python -m poetry run sphinx-build -b html ${SPHINX_SOURCEDIR}/ ${SPHINX_OUTPUTDIR}/
 
       - name: Prepare deployment branch
-        env:
-          GITHUB_DEPLOYMENT_BRANCH: cppsmith-github-io
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@github"
           echo "commit_origin_date=`git log -1 --pretty=%ct`" >> $GITHUB_ENV
-          git stash push --include-untracked build/
+          git stash push --include-untracked ${SPHINX_OUTPUTDIR}/
           git fetch
           git checkout ${GITHUB_DEPLOYMENT_BRANCH}
           rm -rf *
           git stash pop
           touch .nojekyll
-          mv build/* .
+          mv ${SPHINX_OUTPUTDIR}/* .
 
       - name: Deploy
         run: |
