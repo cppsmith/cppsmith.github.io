@@ -4,14 +4,24 @@
         {
             "label": "Setup Poetry",
             "type": "shell",
-            "command": "pip3 install --user poetry; python -m poetry config --local virtualenvs.in-project true; python -m poetry install -v",
+            "linux": {
+                "command": "pip3 install --user poetry; python3 -m poetry config --local virtualenvs.in-project true; python3 -m poetry install -v"
+            },
+            "windows": {
+                "command": "pip3 install --user poetry; python -m poetry config --local virtualenvs.in-project true; python -m poetry install -v",
+            },
             "problemMatcher": [],
             "group": "none"
         },
         {
             "label": "Poetry update dependencies",
             "type": "shell",
-            "command": "python -m poetry update -v",
+            "linux": {
+                "command": "python3 -m poetry update -v"
+            },
+            "windows": {
+                "command": "python -m poetry update -v",
+            },
             "problemMatcher": [],
             "group": "none",
             "dependsOn": [
@@ -21,7 +31,12 @@
         {
             "label": "Generate pages",
             "type": "shell",
-            "command": "python -m poetry run sphinx-build -b html src/ build/",
+            "windows": {
+                "command": "python -m poetry run sphinx-build -b html src/ build/",
+            },
+            "linux": {
+                "command": "python3 -m poetry run sphinx-build -b html src/ build/",
+            },
             "problemMatcher": [],
             "group": "none",
         }

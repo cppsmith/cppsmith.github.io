@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "cppsmith.github.io"
 version = "0.1.0"
-description = "Sphinx pages generator for CPPSmith blog"
+description = "Sphinx pages generator for cppsmith blog"
 authors = ["Eugene Kuznetsov <eugene.kuznetsov.de@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "3.9.x"
+python = ">=3.7,<=3.9.x"
 
 [tool.poetry.dev-dependencies]
 Sphinx = "5.1.1"

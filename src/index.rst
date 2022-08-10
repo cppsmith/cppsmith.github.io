@@ -1,4 +1,2 @@
-CPPSmith
-========
-
 Hello there!
+============

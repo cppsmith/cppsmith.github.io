@@ -1,4 +1,4 @@
-project = 'cppsmith.github.io'
+project = 'cppsmith.dev'
 copyright = '2022, Eugene Kuznetsov'
 author = 'Eugene Kuznetsov'
 extensions = []
