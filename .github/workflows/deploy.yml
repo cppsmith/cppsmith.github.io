@@ -1,7 +1,6 @@
 name: Deploy to GitHub Pages
 
 env:
-  GITHUB_DEPLOYMENT_BRANCH: cppsmith-github-io
   SPHINX_SOURCEDIR: src
   SPHINX_OUTPUTDIR: generated
 
@@ -10,8 +9,20 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
-  main:
+  generate-upload-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -40,25 +51,13 @@ jobs:
 
       - name: Generate pages
         run: |
-          echo "commit_origin_date=`git log -1 --pretty=%ct`" >> $GITHUB_ENV
           python -m poetry run sphinx-build -b html ${SPHINX_SOURCEDIR}/ ${SPHINX_OUTPUTDIR}/
 
-      - name: Prepare deployment branch
-        run: |
-          git config --global user.name "${GITHUB_ACTOR}"
-          git config --global user.email "${GITHUB_ACTOR}@github"
-          echo "commit_origin_date=`git log -1 --pretty=%ct`" >> $GITHUB_ENV
-          git stash push --include-untracked ${SPHINX_OUTPUTDIR}/
-          git fetch
-          git checkout ${GITHUB_DEPLOYMENT_BRANCH}
-          rm -rf *
-          git stash pop
-          touch .nojekyll
-          mv ${SPHINX_OUTPUTDIR}/* .
+      - name: Upload pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ${SPHINX_OUTPUTDIR}/
 
       - name: Deploy
-        run: |
-          git add --all
-          commit_subject="Deploy using `echo ${GITHUB_SHA} | cut -c1-8` made on `date -d\"@${{ env.commit_origin_date }}\" --iso-8601=seconds`"
-          git commit --message="${commit_subject}"
-          git push
+        id: deployment
+        uses: actions/deploy-pages@main
